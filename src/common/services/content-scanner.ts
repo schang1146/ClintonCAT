@@ -1,5 +1,5 @@
 // The 'require.context' feature depends on WebPack (@types/webpack)
-const context: __WebpackModuleApi.RequireContext = require.context('../../content-scanners', true, /\.ts$/, 'sync');
+const context = require.context('../../content-scanners', true, /\.scanner\.ts$/, 'sync');
 import DefaultScanner from '@/content-scanners/default-scanner';
 import { IContentScannerPlugin, IScanParameters } from './content-scanner.types';
 
