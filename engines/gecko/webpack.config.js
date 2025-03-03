@@ -10,7 +10,7 @@ module.exports = (env, argv) => {
         plugins: [
             ...baseConfig(env, argv).plugins,
             new CopyPlugin({
-                patterns: [{ from: 'engines/gecko/manifest.json', to: './' }],
+                patterns: [{ from: 'engines/gecko/manifest.json', to: './', force: true }],
             }),
         ],
     };
