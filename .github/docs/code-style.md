@@ -49,6 +49,9 @@ We use [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/) to enf
 ├── content-scanners             # Site-specific logic to scan or scrape data from these domains
 │   ├── helpers                  # Shared utilities and helper functions for content scanners
 │   ├── amazon                   # Scanner logic specific to domain
+│   │  ├── amazon-uk.scanner.ts  # Scanner must be suffixed with `.scanner.ts` to be picked up
+│   │  └── amazon-us.scanner.ts  # Scanner must be suffixed with `.scanner.ts` to be picked up
+│   │
 │   ├── apple                    # Scanner logic specific to domain
 │   ├── best-buy                 # Scanner logic specific to domain
 │   ├── google                   # Scanner logic specific to domain
