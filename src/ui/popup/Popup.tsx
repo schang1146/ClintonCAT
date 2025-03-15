@@ -1,14 +1,15 @@
+import React, { useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import classNames from 'classnames';
 import sendMessage from '@/common/messages/send-message';
 import Preferences from '@/common/services/preferences';
 import ChromeLocalStorage from '@/storage/chrome/chrome-local-storage';
 import ChromeSyncStorage from '@/storage/chrome/chrome-sync-storage';
 import useEffectOnce from '@/utils/hooks/use-effect-once';
-import React, { useState } from 'react';
-import { createRoot } from 'react-dom/client';
 import * as styles from './Popup.module.css';
 
 const Popup = () => {
-    const [isEnabled, setIsEnabled] = useState(false);
+    const [isEnabled, setIsEnabled] = useState<boolean>(false);
 
     useEffectOnce(() => {
         Preferences.initDefaults(new ChromeSyncStorage(), new ChromeLocalStorage())
@@ -56,9 +57,8 @@ const Popup = () => {
             <label className={styles.toggleLabel}>
                 <span>{isEnabled ? 'Disable' : 'Enable'} ClintonCAT</span>
                 <input type="checkbox" checked={isEnabled} onChange={handleToggleEnabled} />
-                <span className={`${styles.toggleSlider} ${isEnabled ? styles.toggled : ''}`} />
+                <span className={classNames(styles.toggleSlider, { [styles.toggled]: isEnabled })} />
             </label>
-
             <div className={styles.divider} />
             <div className={styles.buttonGroup}>
                 <button className={styles.popupButton} onClick={openCATPage}>

@@ -31,6 +31,7 @@ class ContentScanner {
             try {
                 const module = context(filename) as Record<string, new () => IContentScannerPlugin>;
                 const className = objectKeys(module)[0];
+                if (!className) return;
                 const Class = module[className];
                 const obj: IContentScannerPlugin = new Class();
                 this.scannerPlugins.push(obj);
