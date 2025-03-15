@@ -43,21 +43,22 @@ We use [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/) to enf
 ├── background.ts                # The primary background script for the browser extension
 │
 ├── common                       # Shared code or utilities used by multiple parts of the extension
+│   ├── helpers                  # Shared utility classes and helper functions
 │   ├── observables              # Contains classes/utilities for reactive "observable" logic
 │   └── services                 # Application services (e.g., Preferences, network helpers)
 │
-├── content-scanners             # Site-specific logic to scan or scrape data from these domains
-│   ├── helpers                  # Shared utilities and helper functions for content scanners
+├── content-scanners             # Site-specific logic to scan or scrape data from these domains 
+│   │                            # folder should only contain scanner classes that extend the base scanner class
+│   │
 │   ├── amazon                   # Scanner logic specific to domain
-│   │  ├── amazon-uk.scanner.ts  # Scanner must be suffixed with `.scanner.ts`
-│   │  └── amazon-us.scanner.ts  # Scanner must be suffixed with `.scanner.ts`
+│   │  ├── amazon-uk.ts          # Handles scanning for Amazon UK-specific data and structure
+│   │  └── amazon-us.ts          # Handles scanning for Amazon US-specific data and structure 
 │   │
 │   ├── apple                    # Scanner logic specific to domain
 │   ├── best-buy                 # Scanner logic specific to domain
 │   ├── google                   # Scanner logic specific to domain
 │   ├── meta                     # Scanner logic specific to domain
-│   ├── netflix                  # Scanner logic specific to domain
-│   └── scanner.ts               # Exports all scanners
+│   └── netflix                  # Scanner logic specific to domain
 │
 ├── storage                      # Responsible for browser storage logic (local, sync, cache, etc.)
 │   ├── chrome                   # Chrome-specific storage backends

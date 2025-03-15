@@ -3,7 +3,7 @@ import { getDomainWithoutSuffix, parse } from 'tldts';
 import ContentScanner from '@/common/services/content-scanner';
 import { IScanParameters } from '@/common/services/content-scanner.types';
 import Preferences from '@/common/services/preferences';
-import DOMMessenger from '@/content-scanners/helpers/dom-messenger';
+import DOMMessenger from '@/common/helpers/dom-messenger';
 import { CATWikiPageSearchResults, PagesDB } from '@/database';
 import ChromeLocalStorage from '@/storage/chrome/chrome-local-storage';
 import ChromeSyncStorage from '@/storage/chrome/chrome-sync-storage';

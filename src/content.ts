@@ -1,4 +1,4 @@
-import DOMMessenger from '@/content-scanners/helpers/dom-messenger';
+import DOMMessenger from '@/common/helpers/dom-messenger';
 
 DOMMessenger.registerMessageListener();
 

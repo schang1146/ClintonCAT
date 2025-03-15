@@ -1,4 +1,4 @@
-import { DOMMessengerAction, IDOMMessengerInterface } from '@/content-scanners/helpers/dom-messenger.types';
+import { DOMMessengerAction, IDOMMessengerInterface } from '@/common/helpers/dom-messenger.types';
 import { CATWikiPageSearchResults, PagesDB } from '@/database';
 
 export interface IContentScannerPlugin {
