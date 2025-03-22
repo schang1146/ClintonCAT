@@ -37,18 +37,24 @@ export class Main {
      * Display how many pages were found by updating the badge text
      */
     indicateCATPages(pages: CATWikiPageSearchResults): void {
-        // Update badge text with total pages found
-        void chrome.action.setBadgeText({ text: pages.totalPagesFound.toString() });
+        const totalPages = pages.totalPagesFound;
         console.log(pages);
 
-        // Example: show a notification about the found pages
-        // NOTE: Requires "notifications" permission in your manifest.json
-        chrome.notifications.create({
-            type: 'basic',
-            iconUrl: 'icon48.png', // TODO: Use a proper icon
-            title: 'CAT Pages Found',
-            message: `Found ${pages.totalPagesFound.toString()} page(s).`,
-        });
+        if (totalPages > 0) {
+            // Update badge text with total pages found
+            void chrome.action.setBadgeText({ text: pages.totalPagesFound.toString() });
+            // Example: show a notification about the found pages
+            // NOTE: Requires "notifications" permission in your manifest.json
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'icon48.png', // TODO: Use a proper icon
+                title: 'CAT Pages Found',
+                message: `Found ${pages.totalPagesFound.toString()} page(s).`,
+            });
+        } else {
+            // Revert badge text back to "on" or "off" as set by indicateStatus
+            this.indicateStatus();
+        }
     }
 
     /**
