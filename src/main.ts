@@ -47,7 +47,7 @@ export class Main {
             // NOTE: Requires "notifications" permission in your manifest.json
             chrome.notifications.create({
                 type: 'basic',
-                iconUrl: 'icon48.png', // TODO: Use a proper icon
+                iconUrl: chrome.runtime.getURL('alert.png'),
                 title: 'CAT Pages Found',
                 message: `Found ${pages.totalPagesFound.toString()} page(s).`,
             });
