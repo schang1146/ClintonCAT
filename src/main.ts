@@ -1,3 +1,4 @@
+import messageHandler from '@/common/messages/message-handler';
 import { getDomainWithoutSuffix, parse } from 'tldts';
 import ContentScanner from '@/common/services/content-scanner';
 import { IScanParameters } from '@/common/services/content-scanner.types';
@@ -55,6 +56,21 @@ export class Main {
             // Revert badge text back to "on" or "off" as set by indicateStatus
             this.indicateStatus();
         }
+    }
+
+    notify(message: string) {
+        const notificationId = 'abc123';
+
+        const options: chrome.notifications.NotificationOptions<true> = {
+            type: 'basic',
+            iconUrl: chrome.runtime.getURL('alert.png'),
+            title: 'Hey',
+            message,
+        };
+
+        const callback = (notificationId: string) => console.log('notificationId: ', notificationId);
+
+        chrome.notifications.create(notificationId, options, callback);
     }
 
     /**
@@ -130,6 +146,9 @@ export class Main {
         _sender: chrome.runtime.MessageSender,
         _sendResponse: VoidFunction
     ): void {
+        messageHandler(message, _sender, _sendResponse);
+
+        // TODO: refactor this to use messageHandler (with types)
         void (async () => {
             await Preferences.initDefaults(new ChromeSyncStorage(), new ChromeLocalStorage());
             Preferences.dump();
