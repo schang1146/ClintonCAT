@@ -1,74 +1,44 @@
 import { Maybe } from '@/utils/types';
-import { RuntimeMessage, MessageMap, MessageHandler, MessageHandlerContext } from './messages.types';
+import { RuntimeMessage, MessageMap, MessageHandler } from './messages.types';
 import MessageSender = chrome.runtime.MessageSender;
 
-const logHandler: MessageHandler<'log'> = (payload, _context) =>
+const logHandler: MessageHandler<'log'> = (payload) =>
     new Promise((resolve) => {
         console.log('LOG:', payload.message);
         resolve();
     });
 
-const notifyHandler: MessageHandler<'notify'> = (payload, _context) =>
-    new Promise((resolve, reject) => {
+const notifyHandler: MessageHandler<'notify'> = (payload) =>
+    new Promise((resolve) => {
         const notificationOptions: chrome.notifications.NotificationOptions<true> = {
             type: 'basic',
             iconUrl: chrome.runtime.getURL('alert.png'),
             title: payload.title,
             message: payload.message,
         };
-        chrome.notifications.create(notificationOptions, (notificationId) => {
-            if (chrome.runtime.lastError) {
-                console.error('Error creating notification:', chrome.runtime.lastError.message);
-                reject(new Error(chrome.runtime.lastError.message ?? 'Failed to create notification'));
-            } else {
-                console.log('Notification created successfully with ID:', notificationId);
-                resolve();
-            }
-        });
+        chrome.notifications.create(notificationOptions);
+        resolve();
     });
-
-const pageInfoHandler: MessageHandler<'pageInfo'> = (payload, context) => {
-    return new Promise((resolve, reject) => {
-        console.log('Page Info Received, triggering page load handler:', payload);
-        context.main.onPageLoaded(payload.domain, payload.url).then(resolve).catch(reject);
-    });
-};
 
 const handlers = {
     log: logHandler,
     notify: notifyHandler,
-    pageInfo: pageInfoHandler,
 } satisfies { [K in keyof MessageMap]: MessageHandler<K> };
 
-function messageHandler(
-    request: unknown,
-    sender: MessageSender,
-    sendResponse: (response?: unknown) => void,
-    context: MessageHandlerContext
-) {
-    if (typeof request !== 'object' || request === null || !('type' in request)) {
-        console.warn('Received malformed message (missing type):', request, 'from:', sender);
-        sendResponse(null);
-        return false;
-    }
-
+function messageHandler(request: unknown, _sender: MessageSender, sendResponse: (response?: unknown) => void) {
     const { type, payload } = request as RuntimeMessage<keyof MessageMap>;
-
     const handler = handlers[type] as Maybe<MessageHandler<typeof type>>;
 
-    if (!handler) {
-        console.warn(`No handler registered for message type: ${type}`);
-        sendResponse(null);
-        return false;
-    }
+    if (!handler) return console.warn(`No handler registered for message type: ${type}`);
 
-    handler(payload, context)
+    handler(payload)
         .then(sendResponse)
         .catch((error: unknown) => {
             console.error(`Error in handler for ${type}:`, error);
-            sendResponse({ error: `Handler for ${type} failed.` });
+            sendResponse(null);
         });
 
+    // Return true to keep the message channel open for async usage
     return true;
 }
 
