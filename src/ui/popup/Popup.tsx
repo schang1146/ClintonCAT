@@ -7,6 +7,7 @@ import ChromeLocalStorage from '@/storage/chrome/chrome-local-storage';
 import ChromeSyncStorage from '@/storage/chrome/chrome-sync-storage';
 import useEffectOnce from '@/utils/hooks/use-effect-once';
 import * as styles from './Popup.module.css';
+import { DOMMessengerAction } from '@/common/helpers/dom-messenger.types';
 
 const getActiveTabDomain = (): Promise<string | undefined> => {
     return new Promise((resolve, reject) => {
@@ -48,10 +49,47 @@ const Popup = () => {
         // TODO:
     };
 
-    const testNotification = () => {
+    const testBrowserNotification = () => {
         sendMessage('notify', { title: 'Test Notification', message: 'This is a test notification' }).catch(
             console.error
         );
+    };
+
+    const testPageNotification = () => {
+        console.log('Attempting to send page notification...');
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (chrome.runtime.lastError) {
+                console.error(`Error querying active tab: ${chrome.runtime.lastError.message ?? 'Unknown error'}`);
+                return;
+            }
+            const activeTab = tabs[0];
+            if (activeTab.id) {
+                const tabId = activeTab.id;
+
+                const messageToSend = {
+                    action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION,
+                    message: 'This is a test notification',
+                };
+                chrome.tabs
+                    .sendMessage(tabId, messageToSend)
+                    .then((response) => {
+                        console.log('Page notification sent successfully. Response:', response);
+                    })
+                    .catch((error: unknown) => {
+                        if (error instanceof Error && error.message.includes('Receiving end does not exist')) {
+                            console.warn(
+                                `Could not send page notification: The content script might not be running or ready on this page (${
+                                    activeTab.url ?? 'URL not available'
+                                }). Error: ${error.message}`
+                            );
+                        } else {
+                            console.error('Failed to send page notification due to an unexpected error:', error);
+                        }
+                    });
+            } else {
+                console.error('Could not find active tab ID to send page notification.');
+            }
+        });
     };
 
     const allowThisSite = () => {
@@ -108,8 +146,11 @@ const Popup = () => {
                 <button className={styles.popupButton} onClick={excludeThisSite}>
                     Exclude this site
                 </button>
-                <button className={styles.popupButton} onClick={() => testNotification()}>
-                    Test Notification
+                <button className={styles.popupButton} onClick={() => testBrowserNotification()}>
+                    Test Browser Notification
+                </button>
+                <button className={styles.popupButton} onClick={() => testPageNotification()}>
+                    Test Page Notification
                 </button>
                 <button className={styles.popupButton} onClick={openOptionsPage}>
                     Go to Options
