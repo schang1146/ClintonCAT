@@ -29,20 +29,46 @@ const getActiveTabDomain = (): Promise<string | undefined> => {
 
 const Popup = () => {
     const [isEnabled, setIsEnabled] = useState<boolean>(false);
+    const [browserNotificationsEnabled, setBrowserNotificationsEnabled] = useState<boolean>(true);
+    const [pageNotificationsEnabled, setPageNotificationsEnabled] = useState<boolean>(true);
 
     useEffectOnce(() => {
         Preferences.initDefaults(new ChromeSyncStorage(), new ChromeLocalStorage())
             .then(() => {
                 Preferences.isEnabled.addListener('enable-options', (result: boolean) => setIsEnabled(result));
                 setIsEnabled(Preferences.isEnabled.value);
+
+                Preferences.browserNotificationsEnabled.addListener(
+                    'browser-notifications-enabled-options',
+                    (result: boolean) => setBrowserNotificationsEnabled(result)
+                );
+                setBrowserNotificationsEnabled(Preferences.browserNotificationsEnabled.value);
+
+                Preferences.pageNotificationsEnabled.addListener(
+                    'page-notifications-enabled-options',
+                    (result: boolean) => setPageNotificationsEnabled(result)
+                );
+                setPageNotificationsEnabled(Preferences.pageNotificationsEnabled.value);
             })
             .catch((error: unknown) => console.error('Failed to initialize preferences:', error));
 
-        return () => Preferences.isEnabled.removeListener('enable-options');
+        return () => {
+            Preferences.isEnabled.removeListener('enable-options');
+            Preferences.browserNotificationsEnabled.removeListener('browser-notifications-enabled-options');
+            Preferences.pageNotificationsEnabled.removeListener('page-notifications-enabled-options');
+        };
     });
 
     const handleToggleEnabled = () => {
         Preferences.isEnabled.value = !Preferences.isEnabled.value;
+    };
+
+    const handleToggleBrowserNotifications = () => {
+        Preferences.browserNotificationsEnabled.value = !Preferences.browserNotificationsEnabled.value;
+    };
+
+    const handleTogglePageNotifications = () => {
+        Preferences.pageNotificationsEnabled.value = !Preferences.pageNotificationsEnabled.value;
     };
 
     const openCATPage = () => {
@@ -50,46 +76,54 @@ const Popup = () => {
     };
 
     const testBrowserNotification = () => {
-        sendMessage('notify', { title: 'Test Notification', message: 'This is a test notification' }).catch(
-            console.error
-        );
+        if (Preferences.browserNotificationsEnabled.value) {
+            sendMessage('notify', { title: 'Test Notification', message: 'This is a test browser notification' }).catch(
+                console.error
+            );
+        } else {
+            console.log('Browser notifications are disabled.');
+        }
     };
 
     const testPageNotification = () => {
-        console.log('Attempting to send page notification...');
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            if (chrome.runtime.lastError) {
-                console.error(`Error querying active tab: ${chrome.runtime.lastError.message ?? 'Unknown error'}`);
-                return;
-            }
-            const activeTab = tabs[0];
-            if (activeTab.id) {
-                const tabId = activeTab.id;
+        if (Preferences.pageNotificationsEnabled.value) {
+            console.log('Attempting to send page notification...');
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                if (chrome.runtime.lastError) {
+                    console.error(`Error querying active tab: ${chrome.runtime.lastError.message ?? 'Unknown error'}`);
+                    return;
+                }
+                const activeTab = tabs[0];
+                if (activeTab.id) {
+                    const tabId = activeTab.id;
 
-                const messageToSend = {
-                    action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION,
-                    message: 'This is a test notification',
-                };
-                chrome.tabs
-                    .sendMessage(tabId, messageToSend)
-                    .then((response) => {
-                        console.log('Page notification sent successfully. Response:', response);
-                    })
-                    .catch((error: unknown) => {
-                        if (error instanceof Error && error.message.includes('Receiving end does not exist')) {
-                            console.warn(
-                                `Could not send page notification: The content script might not be running or ready on this page (${
-                                    activeTab.url ?? 'URL not available'
-                                }). Error: ${error.message}`
-                            );
-                        } else {
-                            console.error('Failed to send page notification due to an unexpected error:', error);
-                        }
-                    });
-            } else {
-                console.error('Could not find active tab ID to send page notification.');
-            }
-        });
+                    const messageToSend = {
+                        action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION,
+                        message: 'This is a test page notification',
+                    };
+                    chrome.tabs
+                        .sendMessage(tabId, messageToSend)
+                        .then((response) => {
+                            console.log('Page notification sent successfully. Response:', response);
+                        })
+                        .catch((error: unknown) => {
+                            if (error instanceof Error && error.message.includes('Receiving end does not exist')) {
+                                console.warn(
+                                    `Could not send page notification: The content script might not be running or ready on this page (${
+                                        activeTab.url ?? 'URL not available'
+                                    }). Error: ${error.message}`
+                                );
+                            } else {
+                                console.error('Failed to send page notification due to an unexpected error:', error);
+                            }
+                        });
+                } else {
+                    console.error('Could not find active tab ID to send page notification.');
+                }
+            });
+        } else {
+            console.log('Page notifications are disabled.');
+        }
     };
 
     const allowThisSite = () => {
@@ -134,6 +168,22 @@ const Popup = () => {
                 <span>{isEnabled ? 'Disable' : 'Enable'} ClintonCAT</span>
                 <input type="checkbox" checked={isEnabled} onChange={handleToggleEnabled} />
                 <span className={classNames(styles.toggleSlider, { [styles.toggled]: isEnabled })} />
+            </label>
+            <div className={styles.divider} />
+            <label className={styles.toggleLabel}>
+                <span>{browserNotificationsEnabled ? 'Disable' : 'Enable'} Browser Notifications</span>
+                <input
+                    type="checkbox"
+                    checked={browserNotificationsEnabled}
+                    onChange={handleToggleBrowserNotifications}
+                />
+                <span className={classNames(styles.toggleSlider, { [styles.toggled]: browserNotificationsEnabled })} />
+            </label>
+            <div className={styles.divider} />
+            <label className={styles.toggleLabel}>
+                <span>{pageNotificationsEnabled ? 'Disable' : 'Enable'} Page Notifications</span>
+                <input type="checkbox" checked={pageNotificationsEnabled} onChange={handleTogglePageNotifications} />
+                <span className={classNames(styles.toggleSlider, { [styles.toggled]: pageNotificationsEnabled })} />
             </label>
             <div className={styles.divider} />
             <div className={styles.buttonGroup}>

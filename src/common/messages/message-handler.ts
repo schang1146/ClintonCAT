@@ -1,6 +1,7 @@
 import { Maybe } from '@/utils/types';
 import { RuntimeMessage, MessageMap, MessageHandler, MessageHandlerContext } from './messages.types';
 import MessageSender = chrome.runtime.MessageSender;
+import Preferences from '@/common/services/preferences';
 
 const logHandler: MessageHandler<'log'> = (payload, _context) =>
     new Promise((resolve) => {
@@ -10,6 +11,11 @@ const logHandler: MessageHandler<'log'> = (payload, _context) =>
 
 const notifyHandler: MessageHandler<'notify'> = (payload, _context) =>
     new Promise((resolve, reject) => {
+        if (!Preferences.browserNotificationsEnabled.value) {
+            console.log('Browser notifications are disabled. Skipping notification via notifyHandler.');
+            resolve();
+            return;
+        }
         const notificationOptions: chrome.notifications.NotificationOptions<true> = {
             type: 'basic',
             iconUrl: chrome.runtime.getURL('alert.png'),
