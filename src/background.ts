@@ -4,7 +4,7 @@ import browser, { Runtime } from 'webextension-polyfill';
 
 const main = new Main();
 
-browser.runtime.onMessage.addListener(() => {
+browser.runtime.onInstalled.addListener(() => {
     main.onBrowserExtensionInstalled();
 });
 
