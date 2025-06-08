@@ -1,0 +1,24 @@
+name: Task
+description: Suggest an task for this project
+labels: [ "task" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new task!
+  - type: checkboxes
+    attributes:
+      label: Before submitting an task, please check the following
+      options:
+        - label: I have searched for similar tasks (both open and closed) and cannot find a duplicate
+          required: true
+        - label: I agree to follow the [Code of Conduct](https://github.com/WayneKeenan/ClintonCAT/blob/main/CODE_OF_CONDUCT.md)
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is the task? Please describe.
+      placeholder: Describe what the task is.
+    validations:
+      required: true
