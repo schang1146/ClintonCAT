@@ -1,5 +1,5 @@
 name: Task
-description: Suggest an task for this project
+description: Suggest a task for this project
 labels: [ "task" ]
 body:
   - type: markdown
