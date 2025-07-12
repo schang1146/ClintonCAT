@@ -69,6 +69,15 @@ class DOMMessenger implements IDOMMessengerInterface {
         });
     }
 
+    public async setBadgeText(text: string): Promise<unknown> {
+        console.log('Setting badge text: ', text);
+        const tab = await this.getCurrentTab();
+        return await browser.action.setBadgeText({
+            text: text,
+            tabId: tab.id,
+        });
+    }
+
     // TODO: createElementWithChildSelector ?
     // public async createElementWithChildSelector(
     //     parentId: string,
@@ -111,7 +120,6 @@ class DOMMessenger implements IDOMMessengerInterface {
         if (!tab.id) {
             throw new Error('No active tab found');
         }
-
         return await browser.tabs.sendMessage(tab.id, message);
     }
 

@@ -7,6 +7,7 @@ export interface IDOMMessengerInterface {
     querySelectorAllAsText(selector: string): Promise<string>;
     createElement(parentId: string, element: string, html: string): Promise<void>;
     showInPageNotification(message: string): Promise<unknown>;
+    setBadgeText(text: string): Promise<unknown>;
 }
 
 export enum DOMMessengerAction {

@@ -45,8 +45,7 @@ export class Main {
         console.log(pages);
 
         if (totalPages > 0) {
-            // Update badge text with total pages found
-            void browser.action.setBadgeText({ text: pages.totalPagesFound.toString() });
+            this.onBadgeTextUpdate(totalPages.toString(), domMessenger);
 
             Promise.all([
                 Preferences.getPreference(Preferences.IS_ENABLED_KEY),
@@ -96,6 +95,7 @@ export class Main {
                 );
         } else {
             // Revert badge text back to "on" or "off" as set by indicateStatus
+            console.log('Resetting badge text');
             this.indicateStatus();
         }
     }
@@ -123,8 +123,14 @@ export class Main {
     /**
      * Called when the extension wants to change the action badge text manually.
      */
-    onBadgeTextUpdate(text: string): void {
-        void browser.action.setBadgeText({ text: text });
+    onBadgeTextUpdate(text: string, domMessenger: IDOMMessengerInterface): void {
+        // Update badge text with total pages found
+        domMessenger
+            .setBadgeText(text)
+            .then(() => console.log('Badge text set...'))
+            .catch((error: unknown) => {
+                console.error('Failed to set badge text due to an unexpected error:', error);
+            });
     }
 
     checkDomainIsExcluded(domain: string): boolean {
