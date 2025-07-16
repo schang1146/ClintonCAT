@@ -6,7 +6,7 @@ export interface IDOMMessengerInterface {
     querySelectorByParentId(id: string, selector: string): Promise<IElementData | undefined | null>;
     querySelectorAllAsText(selector: string): Promise<string>;
     createElement(parentId: string, element: string, html: string): Promise<void>;
-    showInPageNotification(message: string): Promise<unknown>;
+    showInPageNotification(message: string, entries: object[]): Promise<unknown>;
     setBadgeText(text: string): Promise<unknown>;
 }
 

@@ -4,7 +4,8 @@ import ContentScanner from '@/common/services/content-scanner';
 import { IScanParameters } from '@/common/services/content-scanner.types';
 import Preferences from '@/common/services/preferences';
 import DOMMessenger from '@/common/helpers/dom-messenger';
-import { CATWikiPageSearchResults, PagesDB } from '@/database';
+import { CATWikiPageSearchResults, PageEntry, PagesDB } from '@/database';
+
 import BrowserLocalStorage from '@/storage/browser/browser-local-storage';
 import BrowserSyncStorage from '@/storage/browser/browser-sync-storage';
 import StorageCache from '@/storage/storage-cache';
@@ -73,8 +74,13 @@ export class Main {
                 .then(([isEnabled, pageNotificationsEnabled]) => {
                     if (isEnabled && pageNotificationsEnabled) {
                         const message = `Found ${pages.totalPagesFound.toString()} CAT page(s).`;
+                        const entries: object[] = [];
+                        pages.pageEntries.forEach((page) => {
+                            entries.push(new PageEntry(page).toObject());
+                        });
+
                         domMessenger
-                            .showInPageNotification(message)
+                            .showInPageNotification(message, entries)
                             .then(() => console.log('In-page notification shown.'))
                             .catch((error: unknown) => {
                                 if (error instanceof Error && error.message.includes('Receiving end does not exist')) {

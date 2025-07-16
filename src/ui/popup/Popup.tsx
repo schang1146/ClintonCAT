@@ -122,6 +122,7 @@ const Popup = () => {
                     const messageToSend = {
                         action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION,
                         message: 'This is a test page notification',
+                        pages: [],
                     };
 
                     try {

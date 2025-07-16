@@ -5,6 +5,7 @@
 import browser from 'webextension-polyfill';
 import DOMMessenger from './dom-messenger';
 import { DOMMessengerAction, IShowInPageNotificationPayload } from './dom-messenger.types';
+import { IPageEntry, PageEntry } from '@/database';
 
 type MessagePayload =
     | { action: DOMMessengerAction.DOM_QUERY_SELECTOR_ALL; selector: string }
@@ -12,7 +13,10 @@ type MessagePayload =
     | { action: DOMMessengerAction.DOM_QUERY_SELECTOR_BY_PARENT_ID; id: string; selector: string }
     | { action: DOMMessengerAction.DOM_QUERY_SELECTOR_ALL_AS_TEXT; selector: string }
     | { action: DOMMessengerAction.DOM_CREATE_ELEMENT; id: string; element: string; html: string }
-    | ({ action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION } & IShowInPageNotificationPayload);
+    | ({
+          action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION;
+          pages: IPageEntry[];
+      } & IShowInPageNotificationPayload);
 
 type MessageListener = (
     message: MessagePayload,
@@ -216,24 +220,41 @@ describe('DOMMessenger', () => {
             expect(parent?.innerHTML).toContain('<strong>Bold</strong>');
         });
 
-        test('handles DOM_SHOW_IN_PAGE_NOTIFICATION correctly', () => {
+        test('handles DOM_SHOW_IN_PAGE_NOTIFICATION correctly', async () => {
             const sendResponse = jest.fn();
             const testMessage = 'Hello from test!';
+
+            const testPage = new PageEntry({ pageId: 1, pageTitle: 'title', popupText: 'text', category: 'category' });
+
+            const pages = [testPage];
+
             listener(
-                { action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION, message: testMessage },
+                { action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION, message: testMessage, pages: pages },
                 {},
                 sendResponse
             );
 
-            const container = document.getElementById('clint-cat-notification-container');
+            const container = document.getElementById(DOMMessenger.containerId());
+
             expect(container).not.toBeNull();
-            expect(container?.style.position).toBe('fixed');
-            expect(container?.children.length).toBeGreaterThan(0);
-            const notificationElement = container?.children[0] as HTMLElement;
-            expect(notificationElement).not.toBeNull();
-            expect(notificationElement.textContent).toContain(testMessage);
-            expect(notificationElement.childNodes[0].nodeValue).toBe(testMessage);
-            expect(notificationElement.querySelector('button')).not.toBeNull();
+
+            const shadow = container?.shadowRoot;
+
+            //Wait 100ms to let it render
+            await new Promise((resolve) => setTimeout(resolve, 100));
+
+            const styleElement = shadow?.children[0] as HTMLElement;
+            expect(styleElement).not.toBeNull();
+            expect(styleElement.nodeName.toLowerCase()).toBe('style');
+
+            const containerElement = shadow?.children[1] as HTMLElement;
+            expect(containerElement).not.toBeNull();
+            expect(containerElement.nodeName.toLowerCase()).toBe('div');
+            expect(containerElement.textContent).toContain(testMessage);
+            expect(containerElement.textContent).toContain(testPage.pageTitle);
+            expect(containerElement?.children.length).toBeGreaterThan(0);
+            expect(containerElement.textContent).toContain(testMessage);
+
             expect(sendResponse).toHaveBeenCalledWith({ success: true });
         });
 

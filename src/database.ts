@@ -9,7 +9,7 @@ export interface IPageEntry {
 }
 
 export class PageEntry implements IPageEntry {
-    static readonly WIKI_URL: string = 'https://wiki.rossmanngroup.com/wiki/index.php?curid=';
+    static readonly WIKI_URL: string = 'https://wiki.rossmanngroup.com/index.php?curid=';
 
     private _pageId: number;
     private _pageTitle: string;
@@ -56,7 +56,16 @@ export class PageEntry implements IPageEntry {
     }
 
     public url(): string {
-        return `${PageEntry.WIKI_URL}/${this.pageId.toString()}`;
+        return `${PageEntry.WIKI_URL}${this.pageId.toString()}`;
+    }
+
+    public toObject(): object {
+        return {
+            pageId: this.pageId,
+            pageTitle: this.pageTitle,
+            popupText: this.popupText,
+            category: this.category,
+        };
     }
 }
 

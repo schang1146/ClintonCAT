@@ -1,6 +1,14 @@
 import { IElementData } from '@/common/services/content-scanner.types';
 import { DOMMessengerAction, IDOMMessengerInterface, IShowInPageNotificationPayload } from './dom-messenger.types';
 import browser from 'webextension-polyfill';
+import makeId from '@/utils/helpers/makeid';
+
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+
+import Inspagenotification from '@/ui/inpagenotification/Inspagenotification';
+
+import { IPageEntry } from '@/database';
 
 type DOMMessagePayload =
     | { action: DOMMessengerAction.DOM_QUERY_SELECTOR_ALL; selector: string }
@@ -8,7 +16,10 @@ type DOMMessagePayload =
     | { action: DOMMessengerAction.DOM_QUERY_SELECTOR; selector: string }
     | { action: DOMMessengerAction.DOM_QUERY_SELECTOR_BY_PARENT_ID; id: string; selector: string }
     | { action: DOMMessengerAction.DOM_CREATE_ELEMENT; id: string; element: string; html: string }
-    | ({ action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION } & IShowInPageNotificationPayload);
+    | ({
+          action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION;
+          pages: IPageEntry[];
+      } & IShowInPageNotificationPayload);
 
 declare global {
     interface Window {
@@ -61,11 +72,13 @@ class DOMMessenger implements IDOMMessengerInterface {
         });
     }
 
-    public async showInPageNotification(message: string): Promise<unknown> {
-        console.log('showInPageNotification: ', message);
+    public async showInPageNotification(message: string, pages: IPageEntry[]): Promise<unknown> {
+        console.log('showInPageNotification1: ', message);
+        console.log('showInPageNotification2: ', pages);
         return await this.sendMessageToCurrentTab({
             action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION,
             message: message,
+            pages: pages,
         });
     }
 
@@ -221,10 +234,10 @@ class DOMMessenger implements IDOMMessengerInterface {
                     break;
                 }
                 case DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION: {
-                    if (!typedMessage.message) {
-                        throw new Error(`DOM_SHOW_IN_PAGE_NOTIFICATION requires a message`);
+                    if (!typedMessage.message && !typedMessage.pages?.length) {
+                        throw new Error(`DOM_SHOW_IN_PAGE_NOTIFICATION requires a message or pages`);
                     }
-                    DOMMessenger.displayNotification(typedMessage.message);
+                    DOMMessenger.displayNotification(typedMessage.message, typedMessage.pages);
                     sendResponse({ success: true });
                     break;
                 }
@@ -236,69 +249,38 @@ class DOMMessenger implements IDOMMessengerInterface {
             return true;
         });
     }
-    private static displayNotification(message: string): void {
-        const containerId = 'clint-cat-notification-container';
-        let container = document.getElementById(containerId);
 
-        if (!container) {
-            container = document.createElement('div');
-            container.id = containerId;
-            Object.assign(container.style, {
-                position: 'fixed',
-                top: '10px',
-                right: '10px',
-                zIndex: '2147483647',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                maxWidth: '300px',
-            });
-            document.body.appendChild(container);
+    /*
+        makeId unique maybe this should be eutils helper ?
+        Original code from https://stackoverflow.com/questions/1349404/generate-a-string-of-random-characters
+    */
+    static elementId: string = '';
+    public static containerId(): string {
+        if (DOMMessenger.elementId == '') {
+            DOMMessenger.elementId = makeId();
         }
-        const notificationElement = document.createElement('div');
-        notificationElement.appendChild(document.createTextNode(message));
+        return DOMMessenger.elementId;
+    }
 
-        const baseStyle: Partial<CSSStyleDeclaration> = {
-            padding: '15px',
-            borderRadius: '5px',
-            color: '#fff',
-            backgroundColor: '#4CAF50',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-            opacity: '1',
-            transition: 'opacity 0.5s ease-out',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-        };
+    private static displayNotification(message: string, pages: IPageEntry[]): void {
+        const containerId = DOMMessenger.containerId();
 
-        Object.assign(notificationElement.style, baseStyle);
+        /**
+         * remove the exsisting container, so a new can be created.
+         */
+        let host = document.getElementById(containerId);
+        host?.remove();
 
-        const closeButton = document.createElement('button');
-        closeButton.textContent = '×';
-        Object.assign(closeButton.style, {
-            marginLeft: '15px',
-            background: 'none',
-            border: 'none',
-            color: 'inherit',
-            fontSize: '20px',
-            cursor: 'pointer',
-            padding: '0',
-            lineHeight: '1',
-        });
-        closeButton.onclick = () => {
-            notificationElement.style.opacity = '0';
-            setTimeout(() => notificationElement.remove(), 500);
-        };
-        notificationElement.appendChild(closeButton);
+        host = document.createElement('div');
+        host.id = containerId;
 
-        container.prepend(notificationElement);
+        const shadow = host.attachShadow({ mode: 'open' }); // should we use closed to protect the content ?
 
-        setTimeout(() => {
-            if (notificationElement.parentElement) {
-                notificationElement.style.opacity = '0';
-                setTimeout(() => notificationElement.remove(), 500);
-            }
-        }, 5000);
+        createRoot(shadow).render(
+            React.createElement(Inspagenotification, { containerId: containerId, message: message, pages: pages })
+        );
+
+        document.body.appendChild(host);
     }
 }
 

@@ -28,6 +28,9 @@ test(
             throw new Error(`Unable to obtain extension worker`);
         }
 
+        //Wait 100ms to let it render
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
         // Open a popup (available for Canary channels).
         await worker.evaluate('chrome.action.openPopup();');
 
