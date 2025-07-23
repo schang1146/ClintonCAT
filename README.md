@@ -21,8 +21,7 @@ for articles related to the website you're currently visiting.<br>
 
 ## Operation
 
-If a CAT wiki page for the website is found then the plugin toolbar icon will indicate the number of controversies found.
-You might also see a clickable angry cat image in the page.
+If a matching page is found on the Consumer Rights Wiki, the extension’s toolbar icon will display the number of controversies associated with the current site. You’ll also be able to navigate directly to the relevant article with a single click.
 
 ## Installation
 
