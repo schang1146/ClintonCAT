@@ -13,9 +13,9 @@
 
 # Under development
 
-Chrome Browser Extension for automatically
-searching [Rossmann's Consumer Action Taskforce (CAT)](https://wiki.rossmanngroup.com/wiki/Mission_statement) articles
-for the current site being visited.<br>
+Chrome browser extension that automatically searches
+[Rossmann's Consumer Rights Wiki (CRW)](https://consumerrights.wiki) 
+for articles related to the website you're currently visiting.<br>
 
 > All references found by this software are not part of ClintonCAT and are provided to the end-user under `CC-4.0-BY-SA licensing` as stated [here](https://wiki.rossmanngroup.com/wiki/Consumer_Action_Taskforce:Copyrights) by the originating website [consumerrights.wiki](https://consumerrights.wiki/).
 
