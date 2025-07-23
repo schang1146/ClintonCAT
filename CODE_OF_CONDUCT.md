@@ -2,7 +2,7 @@
 
 ## Our Pledge
 
-We as a community **pledge to be civil, love Clinton and fight against consumer exploitaition**.
+We, as a community, **pledge to stay civil, stand united against consumer exploitation, and, above all, love Clinton**.
 
 ## Our Mission
 
