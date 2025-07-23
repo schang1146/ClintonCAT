@@ -8,27 +8,10 @@ export interface IInpagenotificationPage {
     page: PageEntry;
 }
 
-/**
- *
- * @param param0 InpagenotificationPageProps
- * @returns React
- *
- * Creates a React to display page info
- *
- * It will only be displayed if the user has previously not dismissed it.
- *
- * TODO: I think the dismiss should de depend on when the page was last updated.
- *  I would sugges that we add page.lastmodifyed or something,
- *  dismiss could also have a time component.
- */
 const InpagenotificationPage = ({ page }: IInpagenotificationPage) => {
     const componentReferance = React.createRef<HTMLParagraphElement>();
 
-    // TODO: should localStorage be a helper ? or should another aproact be made, would clean up the code a bit.
-    const now = Date.now();
-    const storedPage = LocalStorage.readPage(page.pageId);
-
-    const showPage = now > storedPage.timestamp + 60 * 60 * 1000; // curent mute 1 hour, TODO: should come from an option.
+    const showPage = Date.now() > LocalStorage.readPage(page.pageId).timestamp + 60 * 60 * 1000; // curent mute 1 hour, TODO: should come from an option.
 
     const closePage = () => {
         const storedPage = LocalStorage.readPage(page.pageId);
@@ -42,17 +25,36 @@ const InpagenotificationPage = ({ page }: IInpagenotificationPage) => {
         }
     };
 
+    const seeMore = (event: React.MouseEvent<HTMLElement>) => {
+        event.preventDefault();
+        const categoryHeader = event.currentTarget as HTMLElement;
+        if (categoryHeader) {
+            const categoryContent = categoryHeader.parentElement?.parentElement?.querySelector('.page-info');
+            if (categoryContent) {
+                categoryContent.classList.toggle('hidden');
+
+                categoryHeader.textContent = categoryContent.classList.contains('hidden') ? '⯈' : '▼';
+            }
+        }
+    };
+
     if (showPage) {
         return (
             <>
-                <p className="pageItem" ref={componentReferance}>
+                <div className="page" ref={componentReferance}>
+                    <div className="page-menu">
+                        <span className="page-more" onClick={seeMore}>
+                            ⯈
+                        </span>
+                        <span className="page-close" onClick={closePage}>
+                            ✖
+                        </span>
+                    </div>
                     <a href={page.url()} target="_blank">
                         {page.pageTitle}
                     </a>
-                    <span className="close" onClick={closePage}>
-                        ✖
-                    </span>
-                </p>
+                    <div className="page-info hidden">{page.popupText}</div>
+                </div>
             </>
         );
     } else {
@@ -64,18 +66,51 @@ export interface IInpagenotificationMessage {
     message: string;
 }
 
-/**
- *
- * @param param0 InpagenotificationMessageProps
- * @returns React
- *
- * Creates a React to display message
- */
 const InpagenotificationMessage = ({ message }: IInpagenotificationMessage) => {
     if (message && message.length > 0) {
         return (
             <>
-                <p className="pageItem">{message}</p>
+                <p className="message">{message}</p>
+            </>
+        );
+    } else {
+        return <></>;
+    }
+};
+
+export interface IInpagenotificationCategory {
+    pages: [string, PageEntry[]];
+}
+
+const InpagenotificationCategory = ({ pages }: IInpagenotificationCategory) => {
+    const categoryTitle = pages[0];
+    const pagesList = pages[1];
+
+    if (categoryTitle && pagesList) {
+        const cattegoryPages = pagesList.map((page, index) => <InpagenotificationPage key={index} page={page} />);
+
+        const toggleCategory = (event: React.MouseEvent<HTMLElement>) => {
+            event.preventDefault();
+            const categoryHeader = event.currentTarget as HTMLElement;
+            if (categoryHeader) {
+                const categoryContent = categoryHeader.parentElement?.querySelector('.category-content');
+                const arrow = categoryHeader.querySelector('.arrow');
+                const categoryTitle = categoryHeader.nextElementSibling;
+                if (categoryContent && arrow && categoryTitle) {
+                    categoryContent.classList.toggle('show-content');
+
+                    arrow.textContent = categoryContent.classList.contains('show-content') ? '▼' : '⯈';
+                }
+            }
+        };
+        return (
+            <>
+                <div className="category">
+                    <div className="category-header" onClick={toggleCategory}>
+                        <span className="arrow">⯈</span> <span className="category-title">{categoryTitle}</span>
+                    </div>
+                    <div className="category-content">{cattegoryPages}</div>
+                </div>
             </>
         );
     } else {
@@ -89,16 +124,6 @@ export interface IInpagenotification {
     pages: IPageEntry[];
 }
 
-/**
- *
- * @param param0 InpagenotificationProps
- * @returns React
- *
- * base64 encoded image so that domains cant block it. (eg ikea.com) it blosk it via header
- * curently is based on original size but it shouled propearly be a 1:1 so no scaling overhead.
- *
- * Creates a React object for a inpage notification
- */
 const Inpagenotification = ({ containerId, message, pages }: IInpagenotification) => {
     /**
      * timeout even for hiding the notification after a set time
@@ -112,9 +137,6 @@ const Inpagenotification = ({ containerId, message, pages }: IInpagenotification
         }
     }, 5000);
 
-    /**
-     * close event when nortice is manually hidden.
-     */
     const closeNotification = () => {
         const container = document.getElementById(containerId);
         if (timeoutID) {
@@ -125,27 +147,37 @@ const Inpagenotification = ({ containerId, message, pages }: IInpagenotification
         }
     };
 
-    /**
-     * mouse over event of the notice to prevent altu hide
-     */
     const mouseOver = () => {
         if (timeoutID) {
             clearTimeout(timeoutID);
         }
     };
 
-    /**
-     * recreate PageEntry from object.
-     */
-    const _pages: PageEntry[] = [];
+    const showNotification = (event: React.MouseEvent<HTMLElement>) => {
+        event.preventDefault();
+        const categoryHeader = event.currentTarget as HTMLElement;
+        if (categoryHeader) {
+            const icon = categoryHeader.parentElement?.querySelector('.notice-icon');
+            const notice = categoryHeader.parentElement?.querySelector('.notice-hidden');
+
+            if (icon && notice) {
+                icon.remove();
+                notice.classList.remove('notice-hidden');
+            }
+        }
+    };
+
+    const _pages = new Map<string, PageEntry[]>();
     pages.forEach((page) => {
-        _pages.push(new PageEntry(page));
+        if (!_pages.has(page.category)) {
+            _pages.set(page.category, []);
+        }
+        _pages.get(page.category)?.push(new PageEntry(page));
     });
 
-    /**
-     * create a list of InpagenotificationMessage
-     */
-    const componentPages = _pages.map((page, index) => <InpagenotificationPage key={index} page={page} />);
+    const inpagenotificationCategorysPages = [..._pages].map((pages, index) => (
+        <InpagenotificationCategory key={index} pages={pages} />
+    ));
 
     return (
         <>
@@ -177,12 +209,14 @@ const Inpagenotification = ({ containerId, message, pages }: IInpagenotification
                 /**
                  * Start Optionally restore HTML5 block elements
                  */
-                div, p, h1, h2, h3, h4, h5, h6, section, article, header, footer {
-                    display: block;
-                }
                 div {
                     all: initial;
                 }
+
+                div, p, h1, h2, h3, h4, h5, h6, section, article, header, footer {
+                    display: block;
+                }
+
                 body, div {
                     font-family: system-ui, sans-serif;
                     font-size: 14px;
@@ -201,7 +235,7 @@ const Inpagenotification = ({ containerId, message, pages }: IInpagenotification
                     box-shadow: rgb(0, 0, 0) 0px 4px 40px 3px;
                     padding: 10px;
                     margin: 0px 20px 20px;
-                    width: 400px;
+                    max-width: 250px;
                     height: auto;
                     position: fixed;
                     right: 0px;
@@ -214,30 +248,40 @@ const Inpagenotification = ({ containerId, message, pages }: IInpagenotification
                     border-radius: 0px 0px 1rem 1rem;
                 }
 
-                .close {
+                .message {
+                    padding: 0.5em;
+                    color: #333;
+                }
+
+                .page {
+                    padding: 0.5em;
+                    color: #333;
+                }
+                .page:not(:first-child) {
+                    margin-top: 10px;
+                }
+
+                .page-menu {
                     float: right;
                     cursor: pointer;
                     font-weight:
                     bold;
+                 
                     margin-left: 10px;
                 }
-                    
-                .pageItem {
-                    margin-top: 10px;
 
-                    border-radius: 12px;
-                    background-color: rgba(0, 0, 0, 0.1);
-                    border: 1px solid rgba(0, 0, 0, 0.3);
-                    padding: 0.5em;
-                    color: #333;
-                    max-width: 400px;
+                .page-more {
+                    margin-right: 10px;
                 }
 
-                .link {
-                    display: flex;
+                .page-close {
+                }                    
+
+                .wikilink {
                     height: 100%;
                     align-items: center;
                     min-width: 13.875em;
+                    font-size: 1.5em;
                 }
 
                 a {
@@ -245,20 +289,85 @@ const Inpagenotification = ({ containerId, message, pages }: IInpagenotification
                     color: rgb(75, 119, 214);
                     text-decoration: none;
                 }
+
+                .category {
+                    border: 1px solid #ccc;
+                    border-radius: 6px;
+                    overflow: hidden;
+                    font-family: Arial, sans-serif;
+                    overflow: hidden;
+                    transition: max-height 0.3s ease;
+                    background-color: #fff;                    
+                }
+
+                .category:not(:first-child) {
+                    margin-top: 10px;
+                }
+
+                .category-header {
+                    background-color: #f5f5f5;
+                    padding: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    user-select: none;
+                }
+
+                .category-content {
+                    max-height: 0;
+                    overflow: hidden;
+                    transition: max-height 0.3s ease;
+                    background-color: #fff;
+                }
+
+                .show-content {
+                    max-height: 500px;
+                }
+
+                .page-info.hidden {
+                    max-height: 0;
+                    overflow: hidden;
+                    transition: max-height 0.3s ease;
+                    background-color: #fff;
+                }
+
+                .categorys {
+                    overflow-y: auto;
+                    max-height: calc(100dvh - 115px);
+                }
+
+                .notice-hidden {
+                    max-height: 0;
+                    max-width: 0;
+                    overflow: hidden;
+                    transition: max-height 0.3s ease;
+                    background-color: #fff;
+                }
+
+                .notice-icon {
+                    width: 75px;
+                }                
                 `}
             </style>
 
             <div className="container" onMouseOver={mouseOver}>
-                <span className="close" onClick={closeNotification}>
-                    ✖
-                </span>
-                <a className="link" href="https://consumerrights.wiki/" target="_blank">
-                    <span>
-                        <strong>Consumer Rights Wiki</strong>
+                <div className="page-menu">
+                    <span className="page-close" onClick={closeNotification}>
+                        ✖
                     </span>
-                </a>
-                <InpagenotificationMessage message={message} />
-                {componentPages}
+                </div>
+                <div className="notice-icon" onClick={showNotification} onMouseOver={showNotification}>
+                    <img src="data:image/png;base64,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" />
+                </div>
+
+                <div className="notice-hidden">
+                    <a className="wikilink" href="https://consumerrights.wiki/" target="_blank">
+                        <span>
+                            <strong>Consumer Rights Wiki</strong>
+                        </span>
+                    </a>
+                    <InpagenotificationMessage message={message} />
+                    <div className="categorys">{inpagenotificationCategorysPages}</div>
+                </div>
             </div>
         </>
     );
