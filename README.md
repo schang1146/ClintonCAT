@@ -17,7 +17,7 @@ Chrome browser extension that automatically searches
 [Rossmann's Consumer Rights Wiki (CRW)](https://consumerrights.wiki) 
 for articles related to the website you're currently visiting.<br>
 
-> All references found by this software are not part of ClintonCAT and are provided to the end-user under `CC-4.0-BY-SA licensing` as stated [here](https://wiki.rossmanngroup.com/wiki/Consumer_Action_Taskforce:Copyrights) by the originating website [consumerrights.wiki](https://consumerrights.wiki/).
+> All references found by this software are not part of ClintonCAT and are provided to the end-user under `CC-4.0-BY-SA licensing` by the originating website [consumerrights.wiki](https://consumerrights.wiki/).
 
 ## Operation
 
