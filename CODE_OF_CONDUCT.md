@@ -6,5 +6,5 @@ We as a community **pledge to be civil, love Clinton and fight against consumer 
 
 ## Our Mission
 
-Aligns with [Rossmann's Consumer Action Taskforce (CAT)](https://wiki.rossmanngroup.com/wiki/Mission_statement) mission
+Aligns with [Rossmann's Consumer Rights Wiki (CRW)](https://consumerrights.wiki/Mission_statement) mission
 statement.
