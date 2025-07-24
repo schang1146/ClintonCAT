@@ -234,7 +234,7 @@ const Inpagenotification = ({ containerId, message, pages }: IInpagenotification
                     background: rgb(255, 255, 255);
                     box-shadow: rgb(0, 0, 0) 0px 4px 40px 3px;
                     padding: 10px;
-                    margin: 0px 20px 20px;
+                    margin: 10px 10px 10px;
                     max-width: 250px;
                     height: auto;
                     position: fixed;
@@ -242,10 +242,10 @@ const Inpagenotification = ({ containerId, message, pages }: IInpagenotification
                     top: 0px;
                     z-index: 2147483647;
                     display: inline-block;
-                    border-color: currentcolor red red;
-                    border-style: none solid solid;
+                    border-color: red red red;
+                    border-style: solid solid solid;
                     border-width: medium 2px 2px;
-                    border-radius: 0px 0px 1rem 1rem;
+                    border-radius: 1rem 1rem 1rem 1rem;
                 }
 
                 .message {
