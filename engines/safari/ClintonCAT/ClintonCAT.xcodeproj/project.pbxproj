@@ -61,6 +61,8 @@
 		B0018E1C2D6117FB00A7ED4C /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = B0018DFA2D6117FB00A7ED4C /* content.js */; };
 		B0018E1D2D6117FB00A7ED4C /* options.css in Resources */ = {isa = PBXBuildFile; fileRef = B0018DFC2D6117FB00A7ED4C /* options.css */; };
 		B0018E1E2D6117FB00A7ED4C /* icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = B0018DFD2D6117FB00A7ED4C /* icon32.png */; };
+		B0B74B692E400F4C00AA57FC /* browser-polyfill.js in Resources */ = {isa = PBXBuildFile; fileRef = B0B74B682E400F4C00AA57FC /* browser-polyfill.js */; };
+		B0B74B6A2E400F4C00AA57FC /* browser-polyfill.js in Resources */ = {isa = PBXBuildFile; fileRef = B0B74B682E400F4C00AA57FC /* browser-polyfill.js */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -151,6 +153,7 @@
 		B0018DFC2D6117FB00A7ED4C /* options.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = options.css; path = ../../../../dist/options.css; sourceTree = "<group>"; };
 		B0018DFD2D6117FB00A7ED4C /* icon32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon32.png; path = ../../../../dist/icon32.png; sourceTree = "<group>"; };
 		B0018DFE2D6117FB00A7ED4C /* popup.css.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = popup.css.map; path = ../../../../dist/popup.css.map; sourceTree = "<group>"; };
+		B0B74B682E400F4C00AA57FC /* browser-polyfill.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "browser-polyfill.js"; path = "/Users/wayne/local.projects/Rossmann_CAT_BrowserPlugin/ClintonCAT/dist/browser-polyfill.js"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -304,6 +307,7 @@
 				B0018DFC2D6117FB00A7ED4C /* options.css */,
 				B0018DFD2D6117FB00A7ED4C /* icon32.png */,
 				B0018DFE2D6117FB00A7ED4C /* popup.css.map */,
+				B0B74B682E400F4C00AA57FC /* browser-polyfill.js */,
 			);
 			name = Resources;
 			path = "Shared (Extension)";
@@ -475,6 +479,7 @@
 				B0018E1D2D6117FB00A7ED4C /* options.css in Resources */,
 				B0018E172D6117FB00A7ED4C /* alert.png in Resources */,
 				B0018E132D6117FB00A7ED4C /* popup.html in Resources */,
+				B0B74B692E400F4C00AA57FC /* browser-polyfill.js in Resources */,
 				B0018E142D6117FB00A7ED4C /* icon48.png in Resources */,
 				B0018E192D6117FB00A7ED4C /* manifest.json in Resources */,
 				B0018E112D6117FB00A7ED4C /* popup.js.LICENSE.txt in Resources */,
@@ -498,6 +503,7 @@
 				B0018E0D2D6117FB00A7ED4C /* options.css in Resources */,
 				B0018E072D6117FB00A7ED4C /* alert.png in Resources */,
 				B0018E032D6117FB00A7ED4C /* popup.html in Resources */,
+				B0B74B6A2E400F4C00AA57FC /* browser-polyfill.js in Resources */,
 				B0018E042D6117FB00A7ED4C /* icon48.png in Resources */,
 				B0018E092D6117FB00A7ED4C /* manifest.json in Resources */,
 				B0018E012D6117FB00A7ED4C /* popup.js.LICENSE.txt in Resources */,
