@@ -8,7 +8,7 @@ import { createRoot } from 'react-dom/client';
 
 import Inspagenotification from '@/ui/inpagenotification/Inspagenotification';
 
-import { IPageEntry } from '@/database';
+import { IPage, Page } from '@/models/page';
 
 type DOMMessagePayload =
     | { action: DOMMessengerAction.DOM_QUERY_SELECTOR_ALL; selector: string }
@@ -18,7 +18,7 @@ type DOMMessagePayload =
     | { action: DOMMessengerAction.DOM_CREATE_ELEMENT; id: string; element: string; html: string }
     | ({
           action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION;
-          pages: IPageEntry[];
+          pages: IPage[];
       } & IShowInPageNotificationPayload);
 
 declare global {
@@ -72,13 +72,13 @@ class DOMMessenger implements IDOMMessengerInterface {
         });
     }
 
-    public async showInPageNotification(message: string, pages: IPageEntry[]): Promise<unknown> {
+    public async showInPageNotification(message: string, pages: Page[]): Promise<unknown> {
         console.log('showInPageNotification1: ', message);
         console.log('showInPageNotification2: ', pages);
         return await this.sendMessageToCurrentTab({
             action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION,
             message: message,
-            pages: pages,
+            pages: pages.map((page) => page.toJSON()),
         });
     }
 
@@ -262,7 +262,7 @@ class DOMMessenger implements IDOMMessengerInterface {
         return DOMMessenger.elementId;
     }
 
-    private static displayNotification(message: string, pages: IPageEntry[]): void {
+    private static displayNotification(message: string, pages: IPage[]): void {
         const containerId = DOMMessenger.containerId();
 
         /**

@@ -1,11 +1,14 @@
 import React from 'react';
 
-import { IPageEntry, PageEntry } from '@/database';
-
+import { ArticleType, IPage, Page } from '@/models/page';
 import LocalStorage from '@/utils/helpers/local-storage';
+import { CompanyPage, ICompanyPage } from '@/models/company';
+import { IIncidentPage, IncidentPage } from '@/models/incident';
+import { IProductPage, ProductPage } from '@/models/product';
+import { IProductLinePage, ProductLinePage } from '@/models/product-line';
 
 export interface IInpagenotificationPage {
-    page: PageEntry;
+    page: Page;
 }
 
 const InpagenotificationPage = ({ page }: IInpagenotificationPage) => {
@@ -51,9 +54,9 @@ const InpagenotificationPage = ({ page }: IInpagenotificationPage) => {
                         </span>
                     </div>
                     <a href={page.url()} target="_blank">
-                        {page.pageTitle}
+                        {page.pageName}
                     </a>
-                    <div className="page-info hidden">{page.popupText}</div>
+                    <div className="page-info hidden">{page.description}</div>
                 </div>
             </>
         );
@@ -79,7 +82,7 @@ const InpagenotificationMessage = ({ message }: IInpagenotificationMessage) => {
 };
 
 export interface IInpagenotificationCategory {
-    pages: [string, PageEntry[]];
+    pages: [string, Page[]];
 }
 
 const InpagenotificationCategory = ({ pages }: IInpagenotificationCategory) => {
@@ -121,7 +124,7 @@ const InpagenotificationCategory = ({ pages }: IInpagenotificationCategory) => {
 export interface IInpagenotification {
     containerId: string;
     message: string;
-    pages: IPageEntry[];
+    pages: IPage[];
 }
 
 const Inpagenotification = ({ containerId, message, pages }: IInpagenotification) => {
@@ -167,17 +170,31 @@ const Inpagenotification = ({ containerId, message, pages }: IInpagenotification
         }
     };
 
-    const _pages = new Map<string, PageEntry[]>();
+    const _pages = {
+        Company: [] as CompanyPage[],
+        Incident: [] as IncidentPage[],
+        Product: [] as ProductPage[],
+        ProductLine: [] as ProductLinePage[],
+    };
+
     pages.forEach((page) => {
-        if (!_pages.has(page.category)) {
-            _pages.set(page.category, []);
+        if (page.articleType == ArticleType.Company) {
+            _pages.Company.push(CompanyPage.fromJSON(page as unknown as ICompanyPage));
         }
-        _pages.get(page.category)?.push(new PageEntry(page));
+        if (page.articleType == ArticleType.Incident) {
+            _pages.Incident.push(IncidentPage.fromJSON(page as unknown as IIncidentPage));
+        }
+        if (page.articleType == ArticleType.Product) {
+            _pages.Product.push(ProductPage.fromJSON(page as unknown as IProductPage));
+        }
+        if (page.articleType == ArticleType.ProductLine) {
+            _pages.ProductLine.push(ProductLinePage.fromJSON(page as unknown as IProductLinePage));
+        }
     });
 
-    const inpagenotificationCategorysPages = [..._pages].map((pages, index) => (
-        <InpagenotificationCategory key={index} pages={pages} />
-    ));
+    const inpagenotificationCategorysPages = Object.entries(_pages).map(([category, categoryPages], index) => {
+        if (categoryPages.length) return <InpagenotificationCategory key={index} pages={[category, categoryPages]} />;
+    });
 
     return (
         <>
