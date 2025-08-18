@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { ArticleType, IPage, Page } from '@/models/page';
-import LocalStorage from '@/utils/helpers/local-storage';
 import { CompanyPage, ICompanyPage } from '@/models/company';
 import { IIncidentPage, IncidentPage } from '@/models/incident';
 import { IProductPage, ProductPage } from '@/models/product';
@@ -14,14 +13,16 @@ export interface IInpagenotificationPage {
 const InpagenotificationPage = ({ page }: IInpagenotificationPage) => {
     const componentReferance = React.createRef<HTMLParagraphElement>();
 
-    const showPage = Date.now() > LocalStorage.readPage(page.pageId).timestamp + 60 * 60 * 1000; // curent mute 1 hour, TODO: should come from an option.
-
     const closePage = () => {
-        const storedPage = LocalStorage.readPage(page.pageId);
+        const notifyUpdatePayload = {
+            pageId: page.pageId,
+            action: 'mute',
+        };
 
-        storedPage.timestamp = Date.now();
-
-        LocalStorage.writePage(storedPage);
+        void browser.runtime.sendMessage({
+            type: 'notifyUpdate',
+            payload: notifyUpdatePayload,
+        });
 
         if (componentReferance) {
             componentReferance.current?.remove();
@@ -41,28 +42,24 @@ const InpagenotificationPage = ({ page }: IInpagenotificationPage) => {
         }
     };
 
-    if (showPage) {
-        return (
-            <>
-                <div className="page" ref={componentReferance}>
-                    <div className="page-menu">
-                        <span className="page-more" onClick={seeMore}>
-                            ⯈
-                        </span>
-                        <span className="page-close" onClick={closePage}>
-                            ✖
-                        </span>
-                    </div>
-                    <a href={page.url()} target="_blank">
-                        {page.pageName}
-                    </a>
-                    <div className="page-info hidden">{page.description}</div>
+    return (
+        <>
+            <div className="page" ref={componentReferance}>
+                <div className="page-menu">
+                    <span className="page-more" onClick={seeMore}>
+                        ⯈
+                    </span>
+                    <span className="page-close" onClick={closePage}>
+                        ✖
+                    </span>
                 </div>
-            </>
-        );
-    } else {
-        return <></>;
-    }
+                <a href={page.url()} target="_blank">
+                    {page.pageName}
+                </a>
+                <div className="page-info hidden">{page.description}</div>
+            </div>
+        </>
+    );
 };
 
 export interface IInpagenotificationMessage {
