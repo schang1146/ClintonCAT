@@ -5,6 +5,7 @@ import { Page } from '@/models/page';
 export interface INotificationsFilter {
     timestamp: number;
     pageId: number;
+    revision: number;
 }
 
 class NotificationsFilter {
@@ -34,6 +35,11 @@ class NotificationsFilter {
             const existingPage = filters[entry.pageId];
 
             if (!existingPage) return true;
+
+            // TODO: revision based finter curently just permanent using page id.
+            if (existingPage.revision == entry.pageId) {
+                return false;
+            }
 
             return existingPage.timestamp + muteTime < now;
         });

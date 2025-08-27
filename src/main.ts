@@ -196,9 +196,15 @@ export class Main {
         const page: INotificationsFilter = {
             timestamp: 0,
             pageId: pageId,
+            revision: 0,
         };
         if (action == 'mute') {
             page.timestamp = Date.now();
+        }
+
+        // TODO: to be changed to a "revision based dismiss" curently just pernanentm type may need to be changed to a string instead of a number
+        if (action == 'hide') {
+            page.revision = pageId;
         }
         NotificationsFilter.update(page);
     }
