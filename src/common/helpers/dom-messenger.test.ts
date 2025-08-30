@@ -7,6 +7,7 @@ import DOMMessenger from './dom-messenger';
 import { DOMMessengerAction, IShowInPageNotificationPayload } from './dom-messenger.types';
 import { IPage } from '@/models/page';
 import { CompanyPage } from '@/models/company';
+import { IInPageNotificationOptions } from '@/ui/inpagenotification/Inspagenotification';
 
 type MessagePayload =
     | { action: DOMMessengerAction.DOM_QUERY_SELECTOR_ALL; selector: string }
@@ -17,6 +18,7 @@ type MessagePayload =
     | ({
           action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION;
           pages: IPage[];
+          options: IInPageNotificationOptions;
       } & IShowInPageNotificationPayload);
 
 type MessageListener = (
@@ -237,8 +239,20 @@ describe('DOMMessenger', () => {
 
             const pages = [testPage];
 
+            const options: IInPageNotificationOptions = {
+                showMore: true,
+                showMute: true,
+                showHide: true,
+                autoHideTime: 5000,
+            };
+
             listener(
-                { action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION, message: testMessage, pages: pages },
+                {
+                    action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION,
+                    message: testMessage,
+                    pages: pages,
+                    options: options,
+                },
                 {},
                 sendResponse
             );

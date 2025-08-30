@@ -1,4 +1,5 @@
 import { IElementData } from '@/common/services/content-scanner.types';
+import { IInPageNotificationOptions } from '@/ui/inpagenotification/Inspagenotification';
 
 export interface IDOMMessengerInterface {
     querySelectorAll(selector: string): Promise<IElementData[]>;
@@ -6,7 +7,7 @@ export interface IDOMMessengerInterface {
     querySelectorByParentId(id: string, selector: string): Promise<IElementData | undefined | null>;
     querySelectorAllAsText(selector: string): Promise<string>;
     createElement(parentId: string, element: string, html: string): Promise<void>;
-    showInPageNotification(message: string, entries: object[]): Promise<unknown>;
+    showInPageNotification(message: string, entries: object[], options: IInPageNotificationOptions): Promise<unknown>;
     setBadgeText(text: string): Promise<unknown>;
 }
 

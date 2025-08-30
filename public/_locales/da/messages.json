@@ -69,5 +69,39 @@
     },
     "GO_TO_OPTIONS": {
         "message": "Gå til indstillinger"
+    },
+    "SHOW_MORE_OPTION": {
+        "message": "Vis mere option"
+    },
+    "SHOW_MUTE_OPTION": {
+        "message": "Vis skjul option"
+    },
+    "SHOW_HIDE_OPTION": {
+        "message": "Vis fjern option"
+    },
+    "AUTOHIDE_LABEL": {
+        "message": "Skjul automatisk, $seconds$ sekunder",
+        "placeholders": {
+            "seconds": {
+                "content": "$1"
+            }
+        }
+    },
+    "DISMISS_TIME_LABEL": {
+        "message": "Skjul tid, $hours$ timer",
+        "placeholders": {
+            "hours": {
+                "content": "$1"
+            }
+        }
+    },
+    "OFF": {
+        "message": "Slukket"
+    },
+    "30": {
+        "message": "30"
+    },
+    "IN_PAGE_SETTINGS": {
+        "message": "Side besked instillinger"
     }
 }

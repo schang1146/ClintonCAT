@@ -6,7 +6,7 @@ import makeId from '@/utils/helpers/makeid';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-import Inspagenotification from '@/ui/inpagenotification/Inspagenotification';
+import InPageNotification, { IInPageNotificationOptions } from '@/ui/inpagenotification/Inspagenotification';
 
 import { IPage, Page } from '@/models/page';
 
@@ -19,6 +19,7 @@ type DOMMessagePayload =
     | ({
           action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION;
           pages: IPage[];
+          options: IInPageNotificationOptions;
       } & IShowInPageNotificationPayload);
 
 declare global {
@@ -72,13 +73,19 @@ class DOMMessenger implements IDOMMessengerInterface {
         });
     }
 
-    public async showInPageNotification(message: string, pages: Page[]): Promise<unknown> {
+    public async showInPageNotification(
+        message: string,
+        pages: Page[],
+        options: IInPageNotificationOptions
+    ): Promise<unknown> {
         console.log('showInPageNotification1: ', message);
         console.log('showInPageNotification2: ', pages);
+        console.log('showInPageNotification3: ', options);
         return await this.sendMessageToCurrentTab({
             action: DOMMessengerAction.DOM_SHOW_IN_PAGE_NOTIFICATION,
             message: message,
             pages: pages.map((page) => page.toJSON()),
+            options: options,
         });
     }
 
@@ -237,7 +244,7 @@ class DOMMessenger implements IDOMMessengerInterface {
                     if (!typedMessage.message && !typedMessage.pages?.length) {
                         throw new Error(`DOM_SHOW_IN_PAGE_NOTIFICATION requires a message or pages`);
                     }
-                    DOMMessenger.displayNotification(typedMessage.message, typedMessage.pages);
+                    DOMMessenger.displayNotification(typedMessage.message, typedMessage.pages, typedMessage.options);
                     sendResponse({ success: true });
                     break;
                 }
@@ -262,7 +269,7 @@ class DOMMessenger implements IDOMMessengerInterface {
         return DOMMessenger.elementId;
     }
 
-    private static displayNotification(message: string, pages: IPage[]): void {
+    private static displayNotification(message: string, pages: IPage[], options: IInPageNotificationOptions): void {
         const containerId = DOMMessenger.containerId();
 
         /**
@@ -277,7 +284,12 @@ class DOMMessenger implements IDOMMessengerInterface {
         const shadow = host.attachShadow({ mode: 'open' }); // should we use closed to protect the content ?
 
         createRoot(shadow).render(
-            React.createElement(Inspagenotification, { containerId: containerId, message: message, pages: pages })
+            React.createElement(InPageNotification, {
+                containerId: containerId,
+                message: message,
+                pages: pages,
+                options: options,
+            })
         );
 
         document.body.appendChild(host);

@@ -15,6 +15,7 @@ import browser from 'webextension-polyfill';
 import { Page } from './models/page';
 
 import NotificationsFilter, { INotificationsFilter } from './utils/helpers/notification-filter';
+import { IInPageNotificationOptions } from '@/ui/inpagenotification/Inspagenotification';
 
 export interface IMainMessage {
     badgeText: string;
@@ -49,62 +50,90 @@ export class Main {
             Preferences.getPreference(Preferences.IS_ENABLED_KEY),
             Preferences.getPreference(Preferences.BROWSER_NOTIFICATIONS_ENABLED_KEY),
             Preferences.getPreference(Preferences.PAGE_NOTIFICATIONS_ENABLED_KEY),
+            Preferences.getPreference(Preferences.PAGE_NOTIFICATIONS_SHOWMORE_KEY),
+            Preferences.getPreference(Preferences.PAGE_NOTIFICATIONS_SHOWMUTE_KEY),
+            Preferences.getPreference(Preferences.PAGE_NOTIFICATIONS_SHOWHIDE_KEY),
+            Preferences.getPreference(Preferences.PAGE_NOTIFICATIONS_AUTOHIDETIME_KEY),
+            Preferences.getPreference(Preferences.PAGE_NOTIFICATIONS_DISMISSTIME_KEY),
             NotificationsFilter.get(),
         ])
-            .then(([isEnabled, browserNotificationsEnabled, pageNotificationsEnabled, filters]) => {
-                if (isEnabled) {
-                    let pageEntries = pages.pageEntries;
-                    pageEntries = NotificationsFilter.filterPages(pageEntries, filters, 60 * 60 * 1000); // check if muted 1 hour
+            .then(
+                ([
+                    isEnabled,
+                    browserNotificationsEnabled,
+                    pageNotificationsEnabled,
+                    pageNotificationsShowMore,
+                    pageNotificationsShowMute,
+                    pageNotificationsShowHide,
+                    pageNotificationsAutoHideTime,
+                    pageNotificationsDismissTime,
+                    filters,
+                ]) => {
+                    if (isEnabled) {
+                        const options: IInPageNotificationOptions = {
+                            showMore: pageNotificationsShowMore as boolean,
+                            showMute: pageNotificationsShowMute as boolean,
+                            showHide: pageNotificationsShowHide as boolean,
+                            autoHideTime: (pageNotificationsAutoHideTime as number) * 1000,
+                        };
 
-                    const totalPages = pageEntries.length;
-                    console.log('pageEntries', pages.pageEntries, pageEntries);
-                    if (totalPages > 0) {
-                        this.onBadgeTextUpdate(totalPages.toString(), domMessenger);
+                        let pageEntries = pages.pageEntries;
+                        pageEntries = NotificationsFilter.filterPages(
+                            pageEntries,
+                            filters,
+                            (pageNotificationsDismissTime as number) * 60 * 60 * 1000
+                        );
 
-                        if (browserNotificationsEnabled) {
-                            // Example: show a notification about the found pages
-                            // NOTE: Requires "notifications" permission in your manifest.json
-                            void browser.notifications.create({
-                                type: 'basic',
-                                iconUrl: browser.runtime.getURL('alert.png'),
-                                title: 'CAT Pages Found',
-                                message: `Found ${totalPages.toString()} page(s).`,
-                            });
-                        }
+                        const totalPages = pageEntries.length;
+                        console.log('pageEntries', pages.pageEntries, pageEntries);
+                        if (totalPages > 0) {
+                            this.onBadgeTextUpdate(totalPages.toString(), domMessenger);
 
-                        if (pageNotificationsEnabled) {
-                            const message = `Found ${totalPages.toString()} CAT page(s).`;
-                            const entries: Page[] = [];
-                            pageEntries.forEach((page) => {
-                                entries.push(page);
-                            });
-
-                            domMessenger
-                                .showInPageNotification(message, entries)
-                                .then(() => console.log('In-page notification shown.'))
-                                .catch((error: unknown) => {
-                                    if (
-                                        error instanceof Error &&
-                                        error.message.includes('Receiving end does not exist')
-                                    ) {
-                                        console.warn(
-                                            `Failed to send in-page notification (tab might be inactive or closed/navigated away before message was sent): ${error.message}`
-                                        );
-                                    } else {
-                                        console.error(
-                                            'Failed to show in-page notification due to unexpected error:',
-                                            error
-                                        );
-                                    }
+                            if (browserNotificationsEnabled) {
+                                // Example: show a notification about the found pages
+                                // NOTE: Requires "notifications" permission in your manifest.json
+                                void browser.notifications.create({
+                                    type: 'basic',
+                                    iconUrl: browser.runtime.getURL('alert.png'),
+                                    title: 'CAT Pages Found',
+                                    message: `Found ${totalPages.toString()} page(s).`,
                                 });
+                            }
+
+                            if (pageNotificationsEnabled) {
+                                const message = `Found ${totalPages.toString()} CAT page(s).`;
+                                const entries: Page[] = [];
+                                pageEntries.forEach((page) => {
+                                    entries.push(page);
+                                });
+
+                                domMessenger
+                                    .showInPageNotification(message, entries, options)
+                                    .then(() => console.log('In-page notification shown.'))
+                                    .catch((error: unknown) => {
+                                        if (
+                                            error instanceof Error &&
+                                            error.message.includes('Receiving end does not exist')
+                                        ) {
+                                            console.warn(
+                                                `Failed to send in-page notification (tab might be inactive or closed/navigated away before message was sent): ${error.message}`
+                                            );
+                                        } else {
+                                            console.error(
+                                                'Failed to show in-page notification due to unexpected error:',
+                                                error
+                                            );
+                                        }
+                                    });
+                            }
+                        } else {
+                            // Revert badge text back to "on" or "off" as set by indicateStatus
+                            console.log('Resetting badge text');
+                            this.indicateStatus();
                         }
-                    } else {
-                        // Revert badge text back to "on" or "off" as set by indicateStatus
-                        console.log('Resetting badge text');
-                        this.indicateStatus();
                     }
                 }
-            })
+            )
             .catch((error: unknown) => console.error('Failed to get preferences to send in-page notification:', error));
     }
 
